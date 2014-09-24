@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<modification>
+    <id>Filter by Date (for admin panel)</id>
+    <version>1.0.0</version>
+    <vqmver>1.0.9</vqmver>
+    <author>Timotty (googlotim@gmail.com)</author>
+
+    <file name="admin/view/template/catalog/product_list.tpl">
+        <operation>
+
+            <search position="before"><![CDATA[
+                        <td class="right"><?php echo $column_action; ?></td>
+                        ]]></search>
+
+            <add><![CDATA[
+                         <td class="left">
+                            <a href="<?php echo $sort_status.'&sort=p.date_added'; ?>">Date</a>
+                         </td>
+                        ]]></add>
+
+        </operation>
+        <operation>
+
+            <search position="before"><![CDATA[
+                        <td class="right"><?php foreach ($product['action'] as $action) { ?>
+                        ]]></search>
+
+            <add><![CDATA[
+                        <td class="left"><?php echo $product['date_added']; ?></td>
+                        ]]></add>
+
+        </operation>
+    </file>
+    <file name="admin/model/catalog/product.php">
+        <operation>
+
+            <search position="after"><![CDATA[
+                        $sql = "SELECT * FROM " . DB_PREFIX . "product p LEFT JOIN " . DB_PREFIX . "product_description pd ON (p.product_id = pd.product_id)";
+                        ]]></search>
+
+            <add><![CDATA[
+                         if (isset($data['filter_date_added']) && !is_null($data['filter_date_added'])) {
+                          $sql .= " ORDER BY p.date_added '" . (int)$data['filter_date_added'] . "'";
+                         }
+                        ]]></add>
+
+        </operation>
+        <operation>
+
+            <search position="before"><![CDATA[
+                        'p.sort_order'
+                        ]]></search>
+
+            <add><![CDATA[
+                        'p.date_added',
+                        ]]></add>
+
+        </operation>
+    </file>
+    <file name="admin/controller/catalog/product.php">
+        <operation>
+
+            <search position="after"><![CDATA[
+                        protected function getList() {
+                        ]]></search>
+
+            <add><![CDATA[
+                          if (isset($this->request->get['filter_date_added'])) {
+                          $filter_date = $this->request->get['filter_date_added'];
+                              } else {
+                                     $filter_date = null;
+                              }
+                        ]]></add>
+
+        </operation>
+        <operation>
+
+            <search position="after"><![CDATA[
+                        'filter_status'   => $filter_status,
+                        ]]></search>
+
+            <add><![CDATA[
+                        'filter_date'     => $filter_date,
+                        ]]></add>
+
+        </operation>
+        <operation>
+
+            <search position="after"><![CDATA[
+                        'status'     => ($result['status'] ? $this->language->get('text_enabled') : $this->language->get('text_disabled')),
+                        ]]></search>
+
+            <add><![CDATA[
+                        'date_added' => $result['date_added'],
+                        ]]></add>
+
+        </operation>
+        <operation>
+
+            <search position="before" index="1"><![CDATA[
+                        $this->data['breadcrumbs'] = array();
+                        ]]></search>
+
+            <add><![CDATA[
+                        if (isset($this->request->get['filter_date_added'])) {
+                        $url .= '&filter_date_added=' . $this->request->get['filter_date_added'];
+                          }
+                        ]]></add>
+
+        </operation>
+    </file>
+</modification>
